@@ -18,7 +18,8 @@ std::vector<MemCheck*> CBreakPoints::cleanupMemChecks_;
 bool CBreakPoints::breakpointTriggered_ = false;
 BreakPointCpu CBreakPoints::breakpointTriggeredCpu_;
 bool CBreakPoints::corePaused = false;
-std::function<void()> CBreakPoints::cb_bpUpdated_;
+std::function<void()> CBreakPoints::uiUpdateHandler_;
+std::function<void()> CBreakPoints::debugServerUpdateHandler_;
 
 // called from the dynarec
 u32 standardizeBreakpointAddress(u32 addr)
@@ -441,6 +442,9 @@ void CBreakPoints::Update(BreakPointCpu cpu, u32 addr)
 	if (resume)
 		r5900Debug.resumeCpu();
 
-	if (cb_bpUpdated_)
-		cb_bpUpdated_();
+	if (uiUpdateHandler_)
+		uiUpdateHandler_();
+
+	if (debugServerUpdateHandler_)
+		debugServerUpdateHandler_();
 }
