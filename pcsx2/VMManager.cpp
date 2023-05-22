@@ -43,6 +43,8 @@
 #include "DebugTools/MIPSAnalyst.h"
 #include "DebugTools/SymbolMap.h"
 #include "DebugTools/DebugServer.h"
+#include "DebugTools/GDBServer.h"
+#include "Recording/InputRecording.h"
 
 #include "common/Console.h"
 #include "common/Error.h"
@@ -145,8 +147,8 @@ namespace VMManager
 	static void EnsureCPUInfoInitialized();
 	static void SetEmuThreadAffinities();
 
-	static void InitializeDebugServer();
-	static void ShutdownDebugServer();
+	static void InitializeDebugServers();
+	static void ShutdownDebugServers();
 
 	static void InitializeDiscordPresence();
 	static void ShutdownDiscordPresence();
@@ -405,7 +407,7 @@ bool VMManager::Internal::CPUThreadInitialize()
 	// This also sorts out input sources.
 	LoadSettings();
 
-	InitializeDebugServer();
+	InitializeDebugServers();
 	if (EmuConfig.Achievements.Enabled)
 		Achievements::Initialize();
 
@@ -421,7 +423,10 @@ void VMManager::Internal::CPUThreadShutdown()
 {
 	ShutdownDiscordPresence();
 
-	PINEServer::Deinitialize();
+	s_pine_server.Deinitialize();
+
+	Achievements::Shutdown();
+	ShutdownDebugServers();
 
 	Achievements::Shutdown(false);
 	ShutdownDebugServers();
@@ -3436,14 +3441,33 @@ void VMManager::ReloadPINE()
 
 void VMManager::InitializeDebugServers()
 {
-	//if (EmuConfig.EnableGDB && debugNetworkServer.getPort() != EmuConfig.GDBSlot)
-	//{
+	if (EmuConfig.EEEnableDebugServer && EEDebugNetworkServer.getPort() != EmuConfig.EEDebugServerSlot)
+	{
+		EEDebugNetworkServer.shutdown();
+		if (!EEDebugNetworkServer.init("EE", std::make_unique<GDBServer>(&r5900Debug), EmuConfig.EEDebugServerSlot, ""))
+		{
+			ShutdownDebugServers();
+			return;
+		}
+	}	
 	
-	//}
+	if (EmuConfig.IOPEnableDebugServer && IOPDebugNetworkServer.getPort() != EmuConfig.IOPDebugServerSlot)
+	{
+		IOPDebugNetworkServer.shutdown();
+		if (!IOPDebugNetworkServer.init("IOP", std::make_unique<GDBServer>(&r3000Debug), EmuConfig.IOPDebugServerSlot, ""))
+		{
+			ShutdownDebugServers();
+			return;
+		}
+	}
+
+	// #TODO: make debug interfaces for VU0 and VU1
 }
 
 void VMManager::ShutdownDebugServers()
 {
+	IOPDebugNetworkServer.shutdown();
+	EEDebugNetworkServer.shutdown();
 }
 
 #ifdef ENABLE_DISCORD_PRESENCE
