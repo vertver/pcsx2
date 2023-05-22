@@ -40,6 +40,9 @@
 #include "VMManager.h"
 #include "ps2/BiosTools.h"
 #include "svnrev.h"
+#include "DebugTools/MIPSAnalyst.h"
+#include "DebugTools/SymbolMap.h"
+#include "DebugTools/DebugServer.h"
 
 #include "common/Console.h"
 #include "common/Error.h"
@@ -141,6 +144,9 @@ namespace VMManager
 	static void SetHardwareDependentDefaultSettings(SettingsInterface& si);
 	static void EnsureCPUInfoInitialized();
 	static void SetEmuThreadAffinities();
+
+	static void InitializeDebugServer();
+	static void ShutdownDebugServer();
 
 	static void InitializeDiscordPresence();
 	static void ShutdownDiscordPresence();
@@ -399,6 +405,7 @@ bool VMManager::Internal::CPUThreadInitialize()
 	// This also sorts out input sources.
 	LoadSettings();
 
+	InitializeDebugServer();
 	if (EmuConfig.Achievements.Enabled)
 		Achievements::Initialize();
 
@@ -417,7 +424,8 @@ void VMManager::Internal::CPUThreadShutdown()
 	PINEServer::Deinitialize();
 
 	Achievements::Shutdown(false);
-
+	ShutdownDebugServers();
+	
 	InputManager::CloseSources();
 	WaitForSaveStateFlush();
 
@@ -3426,6 +3434,20 @@ void VMManager::ReloadPINE()
 		PINEServer::Initialize();
 }
 
+void VMManager::InitializeDebugServers()
+{
+	//if (EmuConfig.EnableGDB && debugNetworkServer.getPort() != EmuConfig.GDBSlot)
+	//{
+	
+	//}
+}
+
+void VMManager::ShutdownDebugServers()
+{
+}
+
+#ifdef ENABLE_DISCORD_PRESENCE
+
 void VMManager::InitializeDiscordPresence()
 {
 	if (s_discord_presence_active)
@@ -3482,3 +3504,4 @@ void VMManager::PollDiscordPresence()
 
 	Discord_RunCallbacks();
 }
+#endif
