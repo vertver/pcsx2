@@ -770,8 +770,6 @@ set(pcsx2DebugToolsSources
 	DebugTools/DisassemblyManager.cpp
 	DebugTools/ExpressionParser.cpp
 	DebugTools/GDBServer.cpp
-	DebugTools/GDBServerR3000.cpp
-	DebugTools/GDBServerR5900.cpp
 	DebugTools/MIPSAnalyst.cpp
 	DebugTools/MipsAssembler.cpp
 	DebugTools/MipsAssemblerTables.cpp
@@ -791,8 +789,6 @@ set(pcsx2DebugToolsHeaders
 	DebugTools/DisassemblyManager.h
 	DebugTools/ExpressionParser.h
 	DebugTools/GDBServer.h
-	DebugTools/GDBServerR3000.h
-	DebugTools/GDBServerR5900.h
 	DebugTools/MIPSAnalyst.h
 	DebugTools/MipsAssembler.h
 	DebugTools/MipsAssemblerTables.h
